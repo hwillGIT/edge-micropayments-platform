@@ -36,28 +36,48 @@ This README will guide you through setup, configuration, and running your first 
    ```
 
    This extraction will create the following directory structure:
+   ```
    .
+   ├── business/
+   │   ├── presentations/
+   │   │   ├── EMPIC_McKinsey_Presentation.html
+   │   │   └── README.md
+   │   ├── documents/
+   │   │   ├── market_analysis.md
+   │   │   ├── investment_thesis.md
+   │   │   └── competitive_analysis.md
+   │   ├── assets/
+   │   │   └── brand_guidelines.md
+   │   └── README.md
    ├── empic_sdk-x.x.x-py3-none-any.whl
-   ├── plugins
-   │   ├── bin
-   │   │   ├── run_custom_weather_consumer.sh
-   │   │   ├── run_custom_weather_service.sh
-   │   │   ├── run_custom_temperature_consumer.sh
-   │   |   └── run_custom_temperate_service.sh
-   │   ├── configs
-   │   │   ├── plugin_temperature_consumer.json
-   │   │   ├── plugin_temperature_service.json
-   │   │   ├── plugin_weather_consumer.json
-   │   │   └── plugin_weather_service.json
-   │   ├── __init__.py
-   │   ├── plugin_temperature_consumer.py
-   │   ├── plugin_temperature_service.py
-   │   ├── plugin_weather_consumer.py
-   │   ├── plugin_weather_service.py
-   │   └── temperature_sensor.py
+   ├── plugins/
+   │   ├── bin/
+   │   │   ├── run_custom_weather_consumer.sh
+   │   │   ├── run_custom_weather_service.sh
+   │   │   ├── run_custom_temperature_consumer.sh
+   │   │   └── run_custom_temperature_service.sh
+   │   ├── configs/
+   │   │   ├── plugin_temperature_consumer.json
+   │   │   ├── plugin_temperature_service.json
+   │   │   ├── plugin_weather_consumer.json
+   │   │   └── plugin_weather_service.json
+   │   ├── __init__.py
+   │   ├── plugin_temperature_consumer.py
+   │   ├── plugin_temperature_service.py
+   │   ├── plugin_weather_consumer.py
+   │   ├── plugin_weather_service.py
+   │   └── temperature_sensor.py
    ├── python_util-x.x.x-py3-none-any.whl
+   ├── CLAUDE.md
+   ├── EMPIC_WORKFLOW_EVIDENCE.md
+   ├── escrow_id_patch.py
+   ├── run_temperature_consumer.py
+   ├── run_temperature_service.py
+   ├── run_weather_consumer.py
+   ├── run_weather_service.py
    ├── README.md
    └── requirements.txt
+   ```
 
 4. *(Optional but recommended)* Create a Python virtual environment to sandbox your development:
    - Using **conda**:
