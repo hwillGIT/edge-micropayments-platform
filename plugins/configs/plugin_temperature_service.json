@@ -1,0 +1,64 @@
+{
+  "role": "both",
+  "device_id": "temperature-service-001",
+  "port": 9086,
+  "debugpy_port": 3346,
+  "provider_endpoint": "http://localhost:9086/receive-ect",
+  
+  "access_control_url": "http://edgemicropayments.ddns.net:8081",
+  "registry_url": "http://edgemicropayments.ddns.net:8082",
+  "escrow_url": "http://edgemicropayments.ddns.net:8083",
+  "pricing_url": "http://edgemicropayments.ddns.net:8080",
+  "dht_url": "http://edgemicropayments.ddns.net:5001",
+  "rpc_url": "http://edgemicropayments.ddns.net:8545",
+
+  "wallets": [
+    {
+      "name": "Temperature Service Wallet",
+      "address": "0x6E9c4A2F8D3B1C5E7A4F6B8C2D9E3A1F5C7B4E6D2",
+      "purpose": "general"
+    }
+  ],
+  "notifications": { "emails": ["hubertwilliams@hotmail.com"] },
+  "ledger": { "storage": "sqlite", "path": "ledger.db" },
+
+  "generators": [
+    {
+      "class": "plugins.plugin_temperature_service.PluginTemperatureService",
+      "service_id": "temperature data",
+      "description": "IoT device streaming current temperature data",
+      "funding_mode": "auto_fill",
+  "initial_balance": 10000.0,
+      "tags": ["custom","iot","temperature"],
+      "pricing": {
+        "pull": {
+          "price_usdc": 0.01,
+          "billing_model": "per_pull_event"
+        },
+        "pubsub": {
+          "price_usdc": 0.40,
+          "billing_model": "per_escrow_event"
+        }
+      },
+      "delivery_modes": ["pull","pubsub"],
+      "pubsub": {
+        "schema_version": 1,
+        "broker_url": "mqtt://edgemicropayments.ddns.net:1883",
+        "topic_pattern": "empic/{provider_id}/{service_id}/{escrow_id}",
+        "qos": 1,
+        "retain": true,
+        "auth": { "type": "none" },
+
+        "pubsub_terms": {
+          "duration_sec": 60,
+          "expected_msgs": 15,
+          "min_valid_ratio": 0.75,
+          "min_msg_count": 10,
+          "auto_renew": false
+        }
+      }
+    }
+  ],
+
+  "consumers": []
+}

@@ -1,0 +1,51 @@
+{
+  "role": "requester",
+  "consumer_mode": "active",
+  "device_id": "plugin-weather-consumer-001",
+  "description": "Client device subscribing to weather data",
+  "tags": ["custom", "iot", "consumer"],
+  "port": 9074,
+  "debugpy_port": 3344,
+  "signing_url": "http://localhost:9074/sign",
+  "data_receipt_url": "http://localhost:9074/receive-data",
+  "request_params": {
+    "lat": 40.7128,
+    "lon": -74.0060
+  },
+  
+  "access_control_url": "http://edgemicropayments.ddns.net:8081",
+  "registry_url": "http://edgemicropayments.ddns.net:8082",
+  "escrow_url": "http://edgemicropayments.ddns.net:8083",
+  "pricing_url": "http://edgemicropayments.ddns.net:8080",
+  "dht_url": "http://edgemicropayments.ddns.net:5001",
+  "rpc_url": "http://edgemicropayments.ddns.net:8545",
+  
+  "funding_mode": "auto_fill",
+  "escrow_amount": 1000.0,
+  "initial_balance": 10000.0,
+  "wallets": [
+    {
+      "name": "Weather Consumer Wallet",
+      "address": "0x7B3a4Fc8D2e91A5C6f8E3B4D9c2F1a7E8d5C6b4A2",
+      "purpose": "general",
+      "initial_balance": 10000.0
+    }
+  ],
+  "notifications": { "emails": ["hubertwilliams@hotmail.com"] },
+  "ledger": { "storage": "sqlite", "path": "ledger.db" },
+  
+  "generators": [],
+
+  "consumers": [
+    {
+      "class": "plugins.plugin_weather_consumer.PluginWeatherConsumer", 
+      "service_tag": "weather",
+      "delivery_mode note": "as desired: pull | pubsub",
+      "delivery_mode": "pubsub",
+      "discovery_interval": 5,
+      "retry_interval": 3,
+      "max_retries": 10,
+      "cadence_sec": 30
+    }
+  ]
+}

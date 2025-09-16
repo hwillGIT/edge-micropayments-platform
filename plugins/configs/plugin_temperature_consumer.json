@@ -1,0 +1,48 @@
+{
+  "role": "requester",
+  "consumer_mode": "active",
+  "device_id": "temperature-consumer-001",
+  "description": "Client device subscribing to temperature data",
+  "tags": ["custom", "iot", "consumer"],
+  "port": 9087,
+  "debugpy_port": 3347,
+  "signing_url": "http://localhost:9087/sign",
+  "data_receipt_url": "http://localhost:9087/receive-data",
+  "request_params": {},
+  
+  "access_control_url": "http://edgemicropayments.ddns.net:8081",
+  "registry_url": "http://edgemicropayments.ddns.net:8082",
+  "escrow_url": "http://edgemicropayments.ddns.net:8083",
+  "pricing_url": "http://edgemicropayments.ddns.net:8080",
+  "dht_url": "http://edgemicropayments.ddns.net:5001",
+  "rpc_url": "http://edgemicropayments.ddns.net:8545",
+  
+  "funding_mode": "auto_fill",
+  "escrow_amount": 1000.0,
+  "initial_balance": 10000.0,
+  "wallets": [
+    {
+      "name": "Temperature Consumer Wallet",
+      "address": "0x4D8e6F2c9A1B3E7d5C4f8B9a2E6D1c3F7A5B8E2C4",
+      "purpose": "general",
+      "initial_balance": 10000.0
+    }
+  ],
+  "notifications": { "emails": ["hubertwilliams@hotmail.com"] },
+  "ledger": { "storage": "sqlite", "path": "ledger.db" },
+  
+  "generators": [],
+
+  "consumers": [
+    {
+      "class": "plugins.plugin_temperature_consumer.PluginTemperatureConsumer", 
+      "service_tag": "temperature",
+      "delivery_mode note": "as desired: pull | pubsub",
+      "delivery_mode": "pubsub",
+      "discovery_interval": 5,
+      "retry_interval": 3,
+      "max_retries": 10,
+      "cadence_sec": 30
+    }
+  ]
+}

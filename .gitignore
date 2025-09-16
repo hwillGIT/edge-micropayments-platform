@@ -1,0 +1,56 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+wsl_venv/
+ENV/
+env.bak/
+venv.bak/
+python312/
+python-3.12.8-embed-amd64.zip
+
+# Virtual environments
+empic-sdk-demo/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+ledger.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# EMPIC specific
+.config/*/keys.json
+
+# Python packages
+*.whl
+get-pip.py
+
+# Temporary/debug files
+debug_*.py
+run_*_fix.py
+run_direct_patch.py
+run_comprehensive_fix.py
+run_final_fix.py
+run_fixed_consumer.py
+run_patched_empic.py
+run_simple_consumer.py
+run_empic_consumer.py
+run_weather_consumer_fixed.py
+run_wsl_fork.py
