@@ -108,6 +108,19 @@ This README will guide you through setup, configuration, and running your first 
    From your project directory:
    ```bash
    pip install -r requirements.txt
+   ```
+
+8. **Configure your API key**  
+   Create a `.env` file in the project root directory:
+   ```bash
+   echo "SERVICE_API_KEY=your_api_key_here" > .env
+   ```
+   Replace `your_api_key_here` with the API key you obtained from the EMPIC portal.
+
+   **Alternative**: You can also specify the API key directly in each JSON configuration file by adding:
+   ```json
+   "SERVICE_API_KEY": "your_api_key_here"
+   ```
 
 ---
 
@@ -123,67 +136,89 @@ or
 Key fields to update:
 
 ```jsonc
-"SERVICE_API_KEY": "<replace with your API service key>",*
-
-* [Note: if you have multiple consumers and providers, it may be more convenient to specify a single
-  API service key in a .env file in the root of your project directory. Doing this will enable
-  you to use the same key for multiple data consumers and service providers. If you choose this
-  approach, remove the SERVICE_API_KEY entry from the json configuration files for your
-  consumers and service providers.
-
-"port": <replace with your custom port, e.g., 9074>,
-"debugpy_port": <replace with your custom debug port, e.g., 3344>,
-"signing_url": "http://<replace with accessible URL, e.g. mydevice.somewhere.net:<port>>/sign",
-"data_receipt_url": "http://<replace with public URL, e.g. mydevice.somewhere.net:<port>>/receive-data",
-
-"wallets": [
-  {
-    "name": "<Replace with your wallet name, e.g., My Weather Wallet>",
-    "address": "<Replace with your wallet’s blockchain address>
-
-    Note:  During development, you will be utilizing EMPIC's devnet (i.e., dev blockchain), and thus
-           you can define your own wallet addresses. These should conform to the following pattern:
-           "0x" followed by 40 valid hexademical characters (i.e., A-F, a-f,0-9)
-           For example: 0x8Ae84Fc75e27Bee36FB8E5F3031618434cfc0226
-           Be aware that every device in your system should utilize its own unique
-           wallet addresses. Doing otherwise may result in unexpected behavior and errors.
-  }
-],
-
-"notifications": {
-  "emails": ["<Replace with your email address to receive wallet alerts>"]
+{
+  "role": "requester",  // Device role: "requester" for consumers, "provider" for services
+  "consumer_mode": "active",  // Consumer behavior mode
+  "device_id": "<replace with unique device identifier>",
+  "description": "<replace with device description>",
+  "tags": ["custom", "iot", "consumer"],  // Device tags for categorization
+  
+  // Network Configuration
+  "port": 9074,  // Replace with your custom port
+  "debugpy_port": 3344,  // Replace with your custom debug port  
+  "signing_url": "http://localhost:9074/sign",
+  "data_receipt_url": "http://localhost:9074/receive-data",
+  
+  // Request Parameters (for data consumers)
+  "request_params": {
+    "lat": 40.7128,  // Replace with your latitude
+    "lon": -74.0060   // Replace with your longitude
+  },
+  
+  // EMPIC Platform URLs (usually don't need to change for development)
+  "access_control_url": "http://edgemicropayments.ddns.net:8081",
+  "registry_url": "http://edgemicropayments.ddns.net:8082", 
+  "escrow_url": "http://edgemicropayments.ddns.net:8083",
+  "pricing_url": "http://edgemicropayments.ddns.net:8080",
+  "dht_url": "http://edgemicropayments.ddns.net:5001",
+  "rpc_url": "http://edgemicropayments.ddns.net:8545",
+  
+  // Funding Configuration
+  "funding_mode": "auto_fill",  // "auto_fill" for development, "notify_low_funds" for production
+  "escrow_amount": 1000.0,      // Amount to escrow per transaction
+  "initial_balance": 10000.0,   // Initial wallet balance
+  
+  // Wallet Configuration
+  "wallets": [
+    {
+      "name": "<Replace with your wallet name>",
+      "address": "<Replace with your wallet's blockchain address>",
+      "purpose": "general",
+      "initial_balance": 10000.0
+    }
+  ],
+  
+  // Notification Settings
+  "notifications": { 
+    "emails": ["<Replace with your email address>"] 
+  },
+  
+  // Ledger Storage
+  "ledger": { 
+    "storage": "sqlite", 
+    "path": "ledger.db" 
+  },
+  
+  // Consumer Configuration
+  "consumers": [
+    {
+      "class": "plugins.plugin_weather_consumer.PluginWeatherConsumer",
+      "service_tag": "weather",
+      "delivery_mode": "pubsub",  // "pull" or "pubsub"
+      "discovery_interval": 5,    // Service discovery interval (seconds)
+      "retry_interval": 3,        // Retry interval on failures
+      "max_retries": 10,         // Maximum retry attempts
+      "cadence_sec": 30          // Pull request frequency (for pull mode only)
+    }
+  ]
 }
+```
 
-"funding_mode": "auto_fill"
+**Important Configuration Notes:**
 
-   Note: By default, the EMPIC develpment environment provides this auto-fill funding mechanism for 
-         required USDC and ETH account balances. This behavior is configurable, and if you wish 
-         instead to be notified of a wallet's insufficient balance for transactions, you can configure 
-         this field to "notify_low_funds" and an alert will be sent to the email addresses listed in 
-         the "notifications" element". In production mode, "notify_low_funds" is the default, and upon
-	 receipt of low fund email notification, you will need to ensure that your wallet is sufficiently
-	 funded for continued use.
+⚠️ **API Key**: You can specify `SERVICE_API_KEY` directly in the JSON or use a `.env` file in the project root for convenience across multiple services.
 
-"port", and 
-"debugpy_port"
-⚠️ **Important**: Ensure the `port` and `debugpy_port` are unique and not used by other services. Doing
-    otherwise will result in runtime and/or debugging failures.
+⚠️ **Ports**: Ensure `port` and `debugpy_port` are unique across all your services to avoid conflicts.
 
-For example:
+⚠️ **Wallet Addresses**: Use unique wallet addresses for each device. For development on EMPIC's devnet, create addresses with pattern `0x` followed by 40 hexadecimal characters (A-F, a-f, 0-9).
 
-"consumers": [
-  {
-    "class": "plugins.plugin_temperature_consumer.PluginTemperatureConsumer",
-    "service_tag": "temperature",
-    "delivery_mode note": "as desired: pull | pubsub",
-    "delivery_mode": "pubsub"
-  }
+⚠️ **Delivery Modes**: 
+- `"pull"`: Periodic requests with `cadence_sec` interval
+- `"pubsub"`: Real-time subscription mode
 
-   Note: As you develop your own consumers and service providers, the "class" field above will be
-         used to specify the python implmentation to be executed in conjunction with the
-	 json configuration. This allows the runtime logic to be specified in the python code,
-	 while device-specific configuration is specified in the json files. This allows
-	 you to run multiple configurations for the same underlying python logic execution.
+⚠️ **Funding Modes**:
+- `"auto_fill"`: Development mode with automatic wallet funding
+- `"notify_low_funds"`: Production mode requiring manual wallet management
 
 ```
 
@@ -191,7 +226,29 @@ For example:
 
 ## 3. Run the Demo Consumer
 
-Once your configuration has been customized to your needs, start the consumer with:
+### Quick Start with Python Wrapper Scripts
+
+The easiest way to run the demo is using the Python wrapper scripts that handle multiprocessing compatibility:
+
+**Option 1: Weather Consumer**
+```bash
+python3 run_weather_consumer.py
+```
+
+**Option 2: Temperature Consumer**  
+```bash
+python3 run_temperature_consumer.py
+```
+
+These Python scripts automatically:
+- Load the appropriate configuration from `plugins/configs/`
+- Set up proper multiprocessing for WSL/Linux compatibility
+- Apply the escrow ID patch for reliable operation
+- Handle logging and error management
+
+### Alternative: Shell Scripts (Legacy)
+
+You can also use the original shell scripts if preferred:
 
 ```bash
 ./plugins/bin/run_custom_temperature_consumer.sh
@@ -203,22 +260,76 @@ or
 ./plugins/bin/run_custom_weather_consumer.sh
 ```
 
-These script will execute the command to start the python process and apply the customzed configuration
-to it. The script also defines an output log file which is written to the project root directory.
+### What Happens on Startup
 
-Upon startup, the consumer will register itself with the EMPIC platform, request available services tagged with the string found in the "service_tag" JSON configuration element. Your wallet will be self-funding from an EMPIC platform funding faucet. The weather consumer will establish a connection with the discovered weather service, and begin a series of requests for weather data.
+Upon startup, the consumer will:
+1. **Register** with the EMPIC platform using your API key
+2. **Discover services** tagged with the specified `service_tag` 
+3. **Auto-fund wallet** from the EMPIC development faucet
+4. **Establish connection** with discovered service providers
+5. **Begin data exchange** using your configured delivery mode (pull/pubsub)
+
+### 🚀 Complete Demo Environment (4 Services)
+
+To experience the full EMPIC ecosystem, you can run all 4 pre-configured services simultaneously. This demonstrates both consumer and provider roles in action:
+
+**Setup (Required once):**
+```bash
+# Ensure all services have unique ports (already configured)
+# Weather Service: 9085, Temperature Service: 9086
+# Weather Consumer: 9074, Temperature Consumer: 9087
+```
+
+**Run the full demo:**
+```bash
+# Terminal 1: Weather Service (Provider)
+python3 run_weather_service.py
+
+# Terminal 2: Temperature Service (Provider)  
+python3 run_temperature_service.py
+
+# Terminal 3: Weather Consumer (Requester)
+python3 run_weather_consumer.py
+
+# Terminal 4: Temperature Consumer (Requester)
+python3 run_temperature_consumer.py
+```
+
+**Expected Results:**
+- ✅ All 4 services running simultaneously  
+- ✅ Consumers discovering and connecting to providers
+- ✅ Real-time data exchange via MQTT (pubsub mode)
+- ✅ Automatic wallet funding and escrow management
+- ✅ 200+ successful micropayment transactions
+- ✅ Service validation and settlement
 
 ---
 
 ## 4. Development and Debugging in VSCode
 
-A `.vscode/launch.json` is included for debugging. Launch Visual Studio Code from your project directory:
+A complete `.vscode/launch.json` configuration is included for debugging all 4 services. Launch Visual Studio Code from your project directory:
 
 ```bash
 code .
 ```
 
-Select the desired debug configuration from the VSCode debug dropdown (F5). Set breakpoints in your code and debug directly in the EMPIC SDK environment.
+**Available Debug Configurations:**
+- **Run Plugin Custom Weather Consumer** - Debug the weather data consumer
+- **Run Plugin Custom Weather Service** - Debug the weather data provider  
+- **Run Plugin Custom Temperature Consumer** - Debug the temperature data consumer
+- **Run Plugin Custom Temperature Service** - Debug the temperature data provider
+
+**To debug:**
+1. Select the desired configuration from the VSCode debug dropdown
+2. Set breakpoints in your Python plugin files (`plugins/plugin_*.py`)
+3. Press F5 or click the debug play button
+4. Debug directly in the EMPIC SDK environment with full variable inspection
+
+**Debug Tips:**
+- Each configuration automatically loads the correct JSON config file
+- Debug ports are pre-configured (see `debugpy_port` in config files)
+- Set breakpoints in consumer methods like `select_services()`, `consume()`, or `handle_data()`
+- Monitor real-time EMPIC platform interactions and data flows
 
 ---
 
@@ -288,6 +399,64 @@ flowchart TD
 - requirements.txt to install third-party python modules
 - Example configs: `/plugins/configs`
 - Example scripts: `/plugins/bin`
+
+---
+
+## 8. Troubleshooting
+
+### Common Issues and Solutions
+
+#### **Port Conflicts**
+**Problem**: `Address already in use` error  
+**Solution**: 
+```bash
+# Check what's using the port
+netstat -tlnp | grep :9074
+# Kill the process or change port in config file
+```
+
+#### **API Key Issues**
+**Problem**: Authentication failures or `401 Unauthorized`  
+**Solutions**:
+- Verify API key in `.env` file or JSON config
+- Ensure no extra spaces or quotes around the key
+- Check key validity on EMPIC portal
+
+#### **Wallet Address Format**
+**Problem**: Invalid wallet address errors  
+**Solution**: Use format `0x` + 40 hex characters (A-F, a-f, 0-9)
+```json
+"address": "0x8Ae84Fc75e27Bee36FB8E5F3031618434cfc0226"
+```
+
+#### **Service Discovery Failures**
+**Problem**: No services found or connection timeouts  
+**Solutions**:
+- Verify EMPIC platform URLs are accessible
+- Check firewall settings for outbound connections
+- Ensure service providers are running first
+- Confirm `service_tag` matches between consumer and provider
+
+#### **Multiprocessing Errors (Windows)**
+**Problem**: `RuntimeError: Attempt to start a new process`  
+**Solution**: Use WSL or the Python wrapper scripts:
+```bash
+python3 run_weather_consumer.py  # Instead of shell scripts
+```
+
+#### **Escrow/Settlement Issues**
+**Problem**: Transactions failing or hanging  
+**Solutions**:
+- Ensure `escrow_id_patch.py` is present in project root
+- Verify wallet has sufficient balance (auto-fill should handle this)
+- Check escrow amount settings in config
+
+### Performance Tips
+
+- **Start providers before consumers** for fastest service discovery
+- **Use unique ports** for each service to avoid conflicts  
+- **Monitor logs** for detailed transaction information
+- **Run on WSL/Linux** for best multiprocessing compatibility
 
 ---
 
